@@ -1,0 +1,33 @@
+version: 2
+services:
+  # Backend Service
+  - type: web
+    name: slack-connect-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+    autoDeploy: true
+    rootDir: backend
+
+  # Frontend Service  
+  - type: web
+    name: slack-connect-frontend
+    env: static
+    region: oregon 
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    pullRequestPreviewsEnabled: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+    autoDeploy: true
+    rootDir: frontend

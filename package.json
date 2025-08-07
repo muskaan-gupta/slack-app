@@ -1,0 +1,39 @@
+{
+  "name": "slack-connect-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build", 
+    "build": "npm run build:backend && npm run build:frontend",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm run preview",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:frontend": "cd frontend && npm run lint",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test",
+    "test": "npm run test:backend && npm run test:frontend",
+    "clean": "rm -rf backend/dist frontend/dist backend/node_modules frontend/node_modules node_modules",
+    "clean:windows": "rmdir /s /q backend\\dist frontend\\dist backend\\node_modules frontend\\node_modules node_modules",
+    "type-check:backend": "cd backend && npx tsc --noEmit",
+    "type-check:frontend": "cd frontend && npm run type-check",
+    "type-check": "npm run type-check:backend && npm run type-check:frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "description": "Slack Connect - A full-stack Slack messaging and scheduling application",
+  "keywords": ["slack", "messaging", "scheduling", "react", "node.js", "typescript"],
+  "author": "Muskan Gupta",
+  "license": "ISC"
+}
