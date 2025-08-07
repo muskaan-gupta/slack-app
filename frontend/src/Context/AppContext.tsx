@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { type User, type Channel,type  ScheduledMessage } from '../types';
+import { type User, type Channel, type ScheduledMessage } from '../types';
 import { api } from '../api';
 
 interface AppContextType {
@@ -60,14 +60,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Function to fetch scheduled messages from API
   const refreshScheduledMessages = async () => {
     if (!isAuthenticated) {
-      console.log('Not authenticated, skipping scheduled messages fetch');
       return;
     }
     
     try {
-      console.log('Fetching scheduled messages from API...');
       const scheduledData = await api.getScheduledMessages();
-      console.log('API response:', scheduledData);
       
       // Transform API data to match our frontend format
       const transformedMessages = scheduledData.map((msg: any) => ({
@@ -80,7 +77,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         status: msg.status
       }));
       
-      console.log('Transformed messages:', transformedMessages);
       setScheduledMessages(transformedMessages);
     } catch (err: any) {
       console.error('Failed to fetch scheduled messages:', err);

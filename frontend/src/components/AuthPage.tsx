@@ -8,8 +8,9 @@ const AuthPage: React.FC = () => {
   const handleConnectSlack = async () => {
     setLoading(true);
     
-    // Using ngrok HTTPS URL for OAuth
-    window.location.href = 'https://eba90879aa8d.ngrok-free.app/api/auth/slack';
+    // Using configurable URL for OAuth
+    const authUrl = import.meta.env.VITE_AUTH_URL || 'https://081027c3b538.ngrok-free.app/api/auth/slack';
+    window.location.href = authUrl;
   };
 
   return (

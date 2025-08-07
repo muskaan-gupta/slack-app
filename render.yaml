@@ -1,31 +1,44 @@
-version: 2
 services:
-  # Backend Service
+  # Backend API service
   - type: web
-    name: slack-connect-backend
+    name: slack-app-backend
     env: node
-    region: oregon
     plan: free
-    buildCommand: cd backend && npm install && npm run build
-    startCommand: cd backend && npm start
-    healthCheckPath: /api/health
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 5000
-    autoDeploy: true
+        value: 3000
+      - key: SLACK_CLIENT_ID
+        sync: false
+      - key: SLACK_CLIENT_SECRET
+        sync: false
+      - key: SLACK_SIGNING_SECRET
+        sync: false
+      - key: SLACK_REDIRECT_URI
+        value: https://api-slack-app.onrender.com/api/auth/slack/callback
+      - key: CLIENT_URL
+        value: https://slack-app.onrender.com
+      - key: API_URL
+        value: https://api-slack-app.onrender.com
+      - key: MONGODB_URI
+        sync: false
+      - key: TOKEN_REFRESH_BUFFER_MINUTES
+        value: 5
 
-  # Frontend Service  
+  # Frontend service
   - type: web
-    name: slack-connect-frontend
-    env: static
-    region: oregon 
+    name: slack-app-frontend
+    env: node
     plan: free
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: ./frontend/dist
-    pullRequestPreviewsEnabled: true
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: frontend/dist
     envVars:
       - key: NODE_ENV
         value: production
-    autoDeploy: true
+      - key: VITE_API_URL
+        value: https://api-slack-app.onrender.com

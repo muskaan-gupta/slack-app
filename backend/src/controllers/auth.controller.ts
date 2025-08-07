@@ -3,13 +3,6 @@ import { Request, Response } from "express";
 import axios from "axios";
 import { Token } from "../models/Token";
 
-// Configure axios with retry logic and better timeouts
-const axiosConfig = {
-  timeout: 15000, // 15 seconds
-  retry: 3,
-  retryDelay: 1000
-};
-
 const clientId = process.env.SLACK_CLIENT_ID!;
 const clientSecret = process.env.SLACK_CLIENT_SECRET!;
 const redirectUri = process.env.SLACK_REDIRECT_URI!;
@@ -33,11 +26,9 @@ export const handleLogout = async (req: Request, res: Response) => {
       if (teamId) {
         // Delete specific team's tokens
         await Token.findOneAndDelete({ teamId });
-        console.log(`🗑️ Deleted tokens for team: ${teamId}`);
       } else {
         // Delete all tokens (for simplicity in this app)
         await Token.deleteMany({});
-        console.log('🗑️ Deleted all tokens');
       }
     } catch (dbError) {
       console.warn('Database operation failed during logout, but proceeding:', dbError);
@@ -53,27 +44,14 @@ export const handleLogout = async (req: Request, res: Response) => {
 };
 
 export const handleSlackOAuth = async (req: Request, res: Response) => {
-  console.log('=== OAUTH CALLBACK RECEIVED ===');
-  console.log('Query params:', req.query);
-  
   const { code } = req.query;
 
   if (!code) {
-    console.log('❌ No code parameter provided');
     return res.status(400).json({ error: "Missing code parameter" });
   }
 
-  console.log('✅ Code received:', code);
-
   try {
     // Step 1: Exchange code for tokens
-    console.log('🔄 Making request to Slack OAuth API...');
-    console.log('Request details:', {
-      url: 'https://slack.com/api/oauth.v2.access',
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      code: typeof code === 'string' ? code.substring(0, 10) + '...' : code // Log partial code for debugging
-    });
     
     // Try using URLSearchParams for better compatibility
     const formData = new URLSearchParams();
@@ -88,8 +66,6 @@ export const handleSlackOAuth = async (req: Request, res: Response) => {
     
     while (attempts < maxAttempts) {
       try {
-        console.log(`🔄 Attempt ${attempts + 1}/${maxAttempts} to call Slack OAuth API...`);
-        
         tokenResponse = await axios.post(
           "https://slack.com/api/oauth.v2.access",
           formData,
@@ -101,7 +77,6 @@ export const handleSlackOAuth = async (req: Request, res: Response) => {
           }
         );
         
-        console.log('✅ Successfully received response from Slack API');
         break; // Success, exit retry loop
         
       } catch (requestError) {
@@ -113,7 +88,6 @@ export const handleSlackOAuth = async (req: Request, res: Response) => {
         }
         
         // Wait before retrying
-        console.log(`⏳ Waiting 2 seconds before retry...`);
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
     }
@@ -123,7 +97,6 @@ export const handleSlackOAuth = async (req: Request, res: Response) => {
     }
 
     const data = tokenResponse.data;
-    console.log('Slack OAuth Response:', data);
     if (!data.ok) {
       console.error('Slack OAuth Error:', data.error);
       return res.status(400).json({ error: data.error, details: data });
@@ -137,17 +110,12 @@ export const handleSlackOAuth = async (req: Request, res: Response) => {
       team,
     } = data;
 
-    console.log('✅ Token data extracted');
-    console.log('Access token received:', !!access_token);
-    console.log('Expires in:', expires_in);
-
     // Bot tokens from Slack don't expire, so we set a far future date
     const tokenExpiresAt = expires_in 
       ? new Date(Date.now() + expires_in * 1000)
       : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year from now
 
     // Step 2: Save to DB
-    console.log('💾 Saving token to database...');
     await Token.findOneAndUpdate(
       { teamId: team.id },
       {
@@ -160,8 +128,6 @@ export const handleSlackOAuth = async (req: Request, res: Response) => {
       },
       { upsert: true, new: true }
     );
-
-    console.log('✅ Token saved successfully');
 
     return res.redirect(`${process.env.CLIENT_URL}/success`); // Redirect to frontend
   } catch (err) {

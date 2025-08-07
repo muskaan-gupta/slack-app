@@ -37,15 +37,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, headerHeight }) => {
   // Refresh scheduled messages when sidebar opens and user is authenticated
   useEffect(() => {
     if (isAuthenticated && isOpen) {
-      console.log('Refreshing scheduled messages...');
       refreshScheduledMessages();
     }
   }, [isAuthenticated, isOpen, refreshScheduledMessages]);
-
-  // Debug log
-  useEffect(() => {
-    console.log('Sidebar state:', { isAuthenticated, scheduledMessages: scheduledMessages.length });
-  }, [isAuthenticated, scheduledMessages]);
 
   const handleCancelMessage = async (id: string) => {
     try {

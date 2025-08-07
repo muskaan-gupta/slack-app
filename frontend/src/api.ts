@@ -1,53 +1,23 @@
 import axios from "axios";
 
-// Environment-based API URL
-const getApiUrl = () => {
-  if (import.meta.env.PROD) {
-    return import.meta.env.VITE_API_URL || 'https://your-backend-url.onrender.com';
-  }
-  return import.meta.env.VITE_API_URL || 'http://localhost:3000';
-};
-
 const API = axios.create({
-  baseURL: getApiUrl(),
-  timeout: 30000, // 30 second timeout
+  baseURL: import.meta.env.VITE_API_URL || "https://api-slack-app.onrender.com", // Backend URL
+  withCredentials: true, // Include credentials in cross-origin requests
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 second timeout
 });
 
-// Request interceptor for logging in development
-API.interceptors.request.use(
-  (config) => {
-    if (import.meta.env.DEV) {
-      console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
-    }
-    return config;
-  },
-  (error) => {
-    console.error('API Request Error:', error);
-    return Promise.reject(new Error(error.message || 'Request failed'));
-  }
-);
-
-// Response interceptor for error handling
+// Add response interceptor to handle CORS and other errors
 API.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
-    if (import.meta.env.DEV) {
-      console.error('API Response Error:', error.response?.data || error.message);
+    if (error.code === 'ERR_NETWORK') {
+      console.error('Network Error - possible CORS issue:', error);
+      throw new Error('Network connection failed. Please check if the backend server is running.');
     }
-    
-    // Handle network errors
-    if (!error.response) {
-      throw new Error('Network error - please check your connection');
-    }
-    
-    // Handle API errors
-    const message = error.response?.data?.error || error.response?.data?.message || 'An error occurred';
-    throw new Error(message);
+    return Promise.reject(error);
   }
 );
 
