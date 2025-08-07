@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: slack-app-frontend
+    env: static
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        value: https://api-slack-app.onrender.com
+      - key: VITE_AUTH_URL
+        value: https://api-slack-app.onrender.com/api/auth/slack
