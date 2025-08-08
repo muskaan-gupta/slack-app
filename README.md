@@ -112,7 +112,7 @@ slack-connect/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/muskaan-gupta/slack-app.git
+   git clone https://github.com/chinmaypandey62/slack.git
    cd slack-connect
    ```
 
@@ -247,7 +247,86 @@ Set these in your Render dashboard:
 4. **Scheduling**: Choose to send immediately or schedule for later
 5. **Management**: View and manage scheduled messages
 
-## 🔧 Troubleshooting
+## � Challenges Faced & Solutions
+
+During the development of this application, I encountered several significant challenges that required creative solutions:
+
+### 1. Slack OAuth HTTPS Requirement Issue
+
+**Problem**: Slack's OAuth redirect URIs only accept public HTTPS URLs, but during local development, I was running on `http://localhost:3000`. This prevented me from testing the Slack integration locally.
+
+**Solution**: I used **ngrok** to create a secure HTTPS tunnel to my local development server.
+
+```bash
+# Install ngrok globally
+npm install -g ngrok
+
+# Create HTTPS tunnel to local server
+ngrok http 3000
+
+# Use the generated HTTPS URL in Slack app settings
+# Example: https://081027c3b538.ngrok-free.app/api/auth/slack/callback
+```
+
+**Implementation**:
+- Updated `.env` file to use ngrok URL for `SLACK_REDIRECT_URI`
+- Modified Slack app settings to include the ngrok HTTPS URL
+- This allowed seamless local testing of OAuth flow
+
+### 2. Express v5 Path-to-Regexp Compatibility Error
+
+**Problem**: When deploying to production, I encountered a `TypeError: Missing parameter name` error from the `path-to-regexp` library. This was due to Express v5 being experimental and having compatibility issues.
+
+**Error**:
+```
+TypeError: Missing parameter name at 1: https://git.new/pathToRegexpError
+```
+
+**Solution**: I downgraded Express from v5.1.0 to the stable v4.21.2 version.
+
+```bash
+# Fix the Express version
+npm install express@^4.21.2 @types/express@^4.17.21
+```
+
+### 3. SPA Routing Issues on Render (404 Not Found)
+
+**Problem**: After successfully deploying the frontend as a static site on Render, direct navigation to routes like `/success` resulted in 404 errors. This is a common issue with Single Page Applications (SPAs) where the server doesn't know how to handle client-side routes.
+
+**Solution**: I implemented multiple fallback strategies to ensure proper SPA routing:
+
+**Strategy 1 - Vite Configuration**:
+```typescript
+// vite.config.ts
+export default defineConfig({
+  plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      }
+    },
+    copyPublicDir: true,
+  },
+  publicDir: 'public'
+})
+```
+
+**Strategy 2 - _redirects File**:
+```
+// public/_redirects
+/*    /index.html   200
+```
+
+**Strategy 3 - Render Dashboard Configuration**:
+- Navigated to Render Dashboard → Static Site Settings
+- Added redirect rule in "Redirects and Rewrites" section:
+  - Source: `/*`
+  - Destination: `/index.html`
+  - Type: `Rewrite`
+  - Status: `200`
+
+## �🔧 Troubleshooting
 
 ### Common Issues
 
@@ -266,6 +345,18 @@ Set these in your Render dashboard:
 4. **Slack OAuth Redirect Mismatch**
    - Ensure redirect URI matches in Slack app settings
    - Check environment variables
+
+## 📝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/new-feature`)
+3. Commit changes (`git commit -am 'Add new feature'`)
+4. Push to branch (`git push origin feature/new-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the ISC License.
 
 ## 👥 Author
 
