@@ -112,7 +112,7 @@ slack-connect/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/chinmaypandey62/slack.git
+   git clone https://github.com/muskaan-gupta/slack-app.git
    cd slack-connect
    ```
 
